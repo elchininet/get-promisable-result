@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "A very small JavaScript utility to check and retry a function a limited number of times abstracting it in a Promise",
   "keywords": [
+    "promise",
     "promisable",
+    "async",
     "promisable-result",
     "javascript",
     "utility",
