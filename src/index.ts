@@ -1,5 +1,5 @@
-export const DEFAULT_RETRIES = 10;
-export const DEFAULT_DELAY = 10;
+const DEFAULT_RETRIES = 10;
+const DEFAULT_DELAY = 10;
 
 interface PromisableOptions {
     retries?: number;
