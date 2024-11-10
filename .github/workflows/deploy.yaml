@@ -28,7 +28,7 @@ jobs:
       - name: Publish
         run: |
           pnpm install
-          npm publish --provenance --access public
+          npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build Changelog
