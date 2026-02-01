@@ -1,7 +1,7 @@
 const DEFAULT_RETRIES = 10;
 const DEFAULT_DELAY = 10;
 
-interface PromisableOptions {
+export interface PromisableOptions {
     retries?: number;
     delay?: number;
     shouldReject?: boolean;
