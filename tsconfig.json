@@ -2,15 +2,16 @@
     "compilerOptions": {
       "outDir": "./dist/",
       "module": "esnext",
-      "target": "ES5",
-      "moduleResolution": "node",
+      "target": "es6",
+      "moduleResolution": "bundler",
       "esModuleInterop": true,
       "resolveJsonModule": true,
-      "declaration": true,
+      "declaration": false,
       "noImplicitAny": true,
       "removeComments": true,
-      "baseUrl": "./src",
-      "rootDir": "src"
+      "types": ["node", "jest"],
+      "skipLibCheck": true,
+      "rootDir": "./src"
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules"]
