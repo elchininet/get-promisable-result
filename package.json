@@ -13,6 +13,7 @@
     "retry",
     "check-and-retry"
   ],
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
@@ -38,7 +39,7 @@
     "url": "git+https://github.com/elchininet/get-promisable-result"
   },
   "scripts": {
-    "build": "rollup --config rollup.config.js --bundleConfigAsCjs",
+    "build": "rollup --config rollup.config.mjs",
     "test:ts": "tsc --noEmit",
     "test:lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test:unit": "jest --clearCache && jest --verbose --coverage",
