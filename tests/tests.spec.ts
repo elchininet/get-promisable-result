@@ -1,20 +1,25 @@
 import { getPromisableResult } from '../src';
 
+enum State {
+    TRUE = 'true',
+    FALSE = 'false'
+}
+
 class MockTest {
 
     constructor(delay: number) {
 
-        this._valid = 'false';
+        this._valid = State.FALSE;
 
         setTimeout(() => {
-            this._valid = 'true';
+            this._valid = State.TRUE;
         }, delay);
 
     }
 
-    private _valid: string;
+    private _valid: State;
 
-    public get valid(): string {
+    public get valid(): State {
         return this._valid;
     }
 
@@ -35,9 +40,9 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true'
+                    (valid: State) => valid === State.TRUE
                 )
-            ).resolves.toBe('true');
+            ).resolves.toBe(State.TRUE);
     
         });
 
@@ -46,12 +51,12 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true',
+                    (valid: State) => valid === State.TRUE,
                     {
                         retries: 8
                     }
                 )
-            ).resolves.toBe('true');
+            ).resolves.toBe(State.TRUE);
     
         });
 
@@ -60,12 +65,12 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true',
+                    (valid: State) => valid === State.TRUE,
                     {
                         delay: 15
                     }
                 )
-            ).resolves.toBe('true');
+            ).resolves.toBe(State.TRUE);
     
         });
 
@@ -84,7 +89,7 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true'
+                    (valid: State) => valid === State.TRUE
                 )
             ).rejects.toEqual(new Error('Could not get the result after 10 retries'));
     
@@ -95,7 +100,7 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true',
+                    (valid: State) => valid === State.TRUE,
                     {
                         retries: 5
                     }
@@ -109,7 +114,7 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true',
+                    (valid: State) => valid === State.TRUE,
                     {
                         delay: 5
                     }
@@ -123,7 +128,7 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true',
+                    (valid: State) => valid === State.TRUE,
                     {
                         rejectMessage: 'Failed after {{ retries }} retries'
                     }
@@ -137,13 +142,77 @@ describe('getPromisableResult', () => {
             await expect(
                 getPromisableResult(
                     () => mock.valid,
-                    (valid: string) => valid === 'true',
+                    (valid: State) => valid === State.TRUE,
                     {
                         shouldReject: false
                     }
                 )
-            ).resolves.toBe('false');
+            ).resolves.toBe(State.FALSE);
 
+        });
+
+    });
+
+    describe('aborting the promise with an AbortSignal', () => {
+
+        const reason = 'Abort on purpose!';
+        let mock: MockTest;
+
+        beforeEach(() => {
+            mock = new MockTest(100);
+        });
+
+        it('Using an already aborted signal should abort the promise since the beginning', async () => {
+            const controller = new AbortController();
+            const { signal } = controller;
+            controller.abort(reason);
+            await expect(
+                getPromisableResult(
+                    () => mock.valid,
+                    (valid: State) => valid === State.TRUE,
+                    {
+                        signal
+                    }
+                )
+            ).rejects.toMatch(reason);
+        });
+
+        it('Aborting the controller should reject the promise with the given reason', async () => {
+            await expect(
+                async () => {
+                    const controller = new AbortController();
+                    const { signal } = controller;
+                    setTimeout(() => {
+                        controller.abort(reason);
+                    }, 50);
+                    return getPromisableResult(
+                        () => mock.valid,
+                        (valid: State) => valid === State.TRUE,
+                        {
+                            signal
+                        }
+                    );
+                }
+            ).rejects.toMatch(reason);
+        });
+
+        it('an aborted getPromisableResult should catch with an AbortError error', async () => {
+            expect.assertions(1);
+            const controller = new AbortController();
+            const { signal } = controller;
+            setTimeout(() => {
+                controller.abort();
+            }, 50);
+            await getPromisableResult(
+                () => mock.valid,
+                (valid: State) => valid === State.TRUE,
+                {
+                    signal
+                }
+            )
+                .catch((error: unknown) => {
+                    expect((error as Error).name).toBe('AbortError');
+                });
         });
 
     });

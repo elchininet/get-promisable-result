@@ -1,11 +1,13 @@
 const DEFAULT_RETRIES = 10;
 const DEFAULT_DELAY = 10;
+const ABORT_EVENT = 'abort';
 
 export interface PromisableOptions {
     retries?: number;
     delay?: number;
     shouldReject?: boolean;
     rejectMessage?: string;
+    signal?: AbortSignal;
 }
 
 export const getPromisableResult = <T>(
@@ -16,7 +18,8 @@ export const getPromisableResult = <T>(
     const {
         retries = DEFAULT_RETRIES,
         delay = DEFAULT_DELAY,
-        shouldReject = true
+        shouldReject = true,
+        signal
     } = options;
     const rejectMessage = options.rejectMessage ?? `Could not get the result after {{ retries }} retries`;
     return new Promise<T>((resolve, reject) => {
@@ -43,6 +46,14 @@ export const getPromisableResult = <T>(
                 }
             }
         };
+        signal?.throwIfAborted();
+        signal?.addEventListener(
+            ABORT_EVENT,
+            () => {
+                reject(signal.reason);
+            },
+            { once: true }
+        );
         getResultFunctionWrapper();
     });
 };
