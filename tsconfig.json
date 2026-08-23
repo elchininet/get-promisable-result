@@ -11,8 +11,8 @@
       "removeComments": true,
       "types": ["node", "jest"],
       "skipLibCheck": true,
-      "rootDir": "./src"
+      "rootDir": "./"
     },
-    "include": ["src/**/*.ts"],
+    "include": ["src/**/*.ts", "tests/**/*.ts"],
     "exclude": ["node_modules"]
   }

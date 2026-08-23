@@ -43,16 +43,17 @@ getPromisableResult(
 
 ### Options
 
-| Parameter      | Type          | Default | Description                                                         |
-| -------------- | ------------- | ------- | ------------------------------------------------------------------- |
-| retries        | number        | 10      | number of retries that will be performed before the promise rejects |
-| delay          | number        | 10      | delay between the retries                                           |
-| shouldReject   | boolean       | true    | indicates if the promise should be rejected when the number of retries reached the limit. If this parameter is set to `false` and the number of retries is reached the Promise will be resolved with the last value returned by `getResultFunction` |
-| rejectMessage  | string        | \*\*    | custom error message. It can contain the substring `{{ retries }}` and it will be replaced with the number of `retries` |
+| Parameter      | Type          | Default   | Description                                                         |
+| -------------- | ------------- | --------- | ------------------------------------------------------------------- |
+| retries        | number        | 10        | number of retries that will be performed before the promise rejects |
+| delay          | number        | 10        | delay between the retries                                           |
+| shouldReject   | boolean       | true      | indicates if the promise should be rejected when the number of retries reached the limit. If this parameter is set to `false` and the number of retries is reached the Promise will be resolved with the last value returned by `getResultFunction` |
+| rejectMessage  | string        | \*\*      | custom error message. It can contain the substring `{{ retries }}` and it will be replaced with the number of `retries` |
+| signal         | AbortSignal   | undefined | An [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) object that allows you abort the promise before it is fullfilled if required via an [AbortController instance](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) |
 
 >\*\* The default `rejectMessage` will be `Could not get the result after {{ retries }} retries`
 
-## Example
+## Examples
 
 Querying a DOM element that is rendered asynchronously with a custom `retries`, `delay` and `rejectMessage`
 
@@ -73,4 +74,36 @@ getPromisableResult(
     // Do something if the promise is rejected
     // My element could not be retrieved after 50 retries
   });
+```
+
+Querying a DOM element that is rendered asynchronously with the ability to abort the query
+
+```typescript
+const controller = new AbortController();
+const { signal } = controller;
+
+getPromisableResult(
+  () => document.getElementById('my-element'),
+  (element) => element !== null,
+  {
+    retries: 2000,
+    delay: 100,
+    rejectMessage: 'My element could not be retrieved after {{ restries }} retries',
+    signal
+  }
+)
+  .then((element) => {
+    // Do something with the element
+  })
+  .catch((error) => {
+    if (error.name === 'AbortError') {
+      // Do something if the promise was aborted on purpose
+    } else {
+      // Do something if the promise is rejected
+      // My element could not be retrieved after 50 retries
+    }
+  });
+
+// Abort the promise on purpose
+controller.abort();
 ```
