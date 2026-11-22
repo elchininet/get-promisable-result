@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.1] - 2026-11-22
+
+- Fix import using require
+
 ## [2.1.0] - 2026-08-23
 
 - Added support for aborts using an AbortSignal
